@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keyboard Bridge Example</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .connected {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .disconnected {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .events {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 10px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .start-btn {
+            background-color: #28a745;
+            color: white;
+        }
+        .stop-btn {
+            background-color: #dc3545;
+            color: white;
+        }
+        .input-area {
+            border: 2px solid #007bff;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            min-height: 100px;
+            background-color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>Keyboard Bridge Example</h1>
+    
+    <div id="status" class="status disconnected">
+        Status: Disconnected
+    </div>
+    
+    <div>
+        <button id="startBtn" class="start-btn">Start Bridge</button>
+        <button id="stopBtn" class="stop-btn" disabled>Stop Bridge</button>
+    </div>
+    
+    <div class="input-area" id="inputArea" tabindex="0">
+        <p>Click here and start typing to test the keyboard bridge...</p>
+    </div>
+    
+    <h3>Event Log:</h3>
+    <div id="events" class="events"></div>
+
+    <script type="module">
+        import { KeyboardBridge } from './src/index.ts';
+
+        let bridge = null;
+        const statusEl = document.getElementById('status');
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const eventsEl = document.getElementById('events');
+        const inputArea = document.getElementById('inputArea');
+
+        function updateStatus(connected) {
+            statusEl.textContent = `Status: ${connected ? 'Connected' : 'Disconnected'}`;
+            statusEl.className = `status ${connected ? 'connected' : 'disconnected'}`;
+            startBtn.disabled = connected;
+            stopBtn.disabled = !connected;
+        }
+
+        function logEvent(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            eventsEl.appendChild(logEntry);
+            eventsEl.scrollTop = eventsEl.scrollHeight;
+        }
+
+        startBtn.addEventListener('click', async () => {
+            try {
+                bridge = new KeyboardBridge({
+                    url: 'ws://localhost:8080',
+                    debug: true,
+                    reconnectInterval: 5000,
+                    maxReconnectAttempts: 10
+                }, {
+                    target: inputArea,
+                    captureComposition: true,
+                    captureModifiers: true,
+                    preventDefault: false,
+                    stopPropagation: false
+                });
+
+                await bridge.start();
+                updateStatus(true);
+                logEvent('Bridge started successfully');
+            } catch (error) {
+                logEvent(`Failed to start bridge: ${error.message}`);
+                console.error('Bridge start error:', error);
+            }
+        });
+
+        stopBtn.addEventListener('click', () => {
+            if (bridge) {
+                bridge.stop();
+                bridge = null;
+                updateStatus(false);
+                logEvent('Bridge stopped');
+            }
+        });
+
+        // Focus the input area
+        inputArea.focus();
+    </script>
+</body>
+</html> 

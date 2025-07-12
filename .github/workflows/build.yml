@@ -1,0 +1,185 @@
+name: Build Python Wheel and TypeScript Library
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  release:
+    types: [ published ]
+
+jobs:
+  build-python:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+        
+    - name: Install PDM
+      uses: pdm-project/setup-pdm@v3
+      with:
+        python-version: ${{ matrix.python-version }}
+        
+    - name: Cache PDM dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          src/python/.pdm.toml
+          src/python/pdm.lock
+          src/python/.venv
+        key: pdm-${{ matrix.python-version }}-${{ hashFiles('src/python/pdm.lock') }}
+        restore-keys: |
+          pdm-${{ matrix.python-version }}-
+          
+    - name: Install dependencies
+      working-directory: src/python
+      run: pdm install
+      
+    - name: Build wheel
+      working-directory: src/python
+      run: pdm build
+      
+    - name: Upload Python wheel artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: keyboard-bridge-wheel-py${{ matrix.python-version }}
+        path: src/python/dist/*.whl
+        retention-days: 30
+
+  build-typescript:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: src/typescript/package-lock.json
+        
+    - name: Install dependencies
+      working-directory: src/typescript
+      run: npm ci
+      
+    - name: Build TypeScript library
+      working-directory: src/typescript
+      run: npm run build
+      
+    - name: Upload TypeScript library artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: keyboard-bridge-typescript-lib
+        path: src/typescript/dist/
+        retention-days: 30
+
+  test-python:
+    runs-on: ubuntu-latest
+    needs: build-python
+    strategy:
+      matrix:
+        python-version: ["3.11"]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+        
+    - name: Install PDM
+      uses: pdm-project/setup-pdm@v3
+      with:
+        python-version: ${{ matrix.python-version }}
+        
+    - name: Cache PDM dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          src/python/.pdm.toml
+          src/python/pdm.lock
+          src/python/.venv
+        key: pdm-${{ matrix.python-version }}-${{ hashFiles('src/python/pdm.lock') }}
+        restore-keys: |
+          pdm-${{ matrix.python-version }}-
+          
+    - name: Install dependencies
+      working-directory: src/python
+      run: pdm install --group :test
+      
+    - name: Run Python tests
+      working-directory: src/python
+      run: pdm run test
+
+  test-typescript:
+    runs-on: ubuntu-latest
+    needs: build-typescript
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: src/typescript/package-lock.json
+        
+    - name: Install dependencies
+      working-directory: src/typescript
+      run: npm ci
+      
+    - name: Run TypeScript tests
+      working-directory: src/typescript
+      run: npm test
+
+  create-release:
+    runs-on: ubuntu-latest
+    needs: [build-python, build-typescript, test-python, test-typescript]
+    if: github.event_name == 'release' && github.event.action == 'published'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Download Python wheel artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: keyboard-bridge-wheel-py3.11
+        path: wheels/
+        
+    - name: Download TypeScript library artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: keyboard-bridge-typescript-lib
+        path: typescript-lib/
+        
+    - name: Create release assets
+      run: |
+        mkdir -p release-assets
+        cp wheels/*.whl release-assets/
+        cp -r typescript-lib/* release-assets/
+        
+    - name: Upload release assets
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ./release-assets/
+        asset_name: keyboard-bridge-assets
+        asset_content_type: application/zip 

@@ -1,0 +1,72 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+dist/
+build/
+.eggs/
+.venv/
+venv/
+.env
+.env.*
+
+# PDM
+pdm.lock
+.pdm.toml
+
+# TypeScript/Node
+node_modules/
+dist/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Vite
+.vite/
+
+# Coverage
+.coverage
+coverage/
+htmlcov/
+
+# Test
+*.test.js
+*.test.ts
+*.spec.js
+*.spec.ts
+
+# IDEs/Editors
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+*.pid
+*.sock
+
+# Misc
+*.swp
+*.bak
+*.tmp
+
+# Artifacts
+*.whl
+*.tar.gz
+
+# Release assets
+release-assets/
+
+# GitHub Actions
+.github/workflows/*.log
+
+# Local config
+# run-docker.bat (keeping this script in repo) 

@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  keyboard-bridge:
+    build: .
+    container_name: keyboard-bridge-daemon
+    ports:
+      - "${BRIDGE_PORT:-8080}:8080"
+    volumes:
+      # For WSL2, we need to mount the uinput device differently
+      - /dev/uinput:/dev/uinput:rw
+    devices:
+      # Grant access to uinput device
+      - /dev/uinput:/dev/uinput
+    privileged: true  # Required for creating virtual devices
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+      # Daemon configuration
+      - BRIDGE_HOST=${BRIDGE_HOST:-0.0.0.0}
+      - BRIDGE_PORT=${BRIDGE_PORT:-8080}
+      - BRIDGE_DEVICE_ID=${BRIDGE_DEVICE_ID:-1}
+      - BRIDGE_DEBUG=${BRIDGE_DEBUG:-false}
+      - BRIDGE_MOCK=${BRIDGE_MOCK:-true}
+      - BRIDGE_KEYMAP_FILE=${BRIDGE_KEYMAP_FILE:-}
+      - BRIDGE_LOG_LEVEL=${BRIDGE_LOG_LEVEL:-info}
+    command: ["keyboard-bridge"]
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import websockets; import asyncio; print('Health check passed')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    # For Windows Docker Desktop with WSL2 backend
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M 
