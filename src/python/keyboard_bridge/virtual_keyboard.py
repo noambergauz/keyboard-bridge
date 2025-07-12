@@ -8,11 +8,11 @@ by xFreeRDP as input devices.
 
 import logging
 from dataclasses import dataclass
-from typing import Dict, Optional, Any
+from typing import Any, Dict, Optional
 
 # Try to import uinput, fallback to mock if not available
 try:
-    import uinput
+    import uinput  # type: ignore
 
     UINPUT_AVAILABLE = True
 except ImportError:
@@ -330,7 +330,8 @@ class VirtualKeyboardDevice:
     def get_device_path(self) -> Optional[str]:
         """Get the device path for xFreeRDP integration."""
         if self.device and hasattr(self.device, "device_path"):
-            return str(self.device.device_path)
+            device_path = self.device.device_path
+            return str(device_path) if device_path is not None else None
         return None
 
     def cleanup(self) -> None:

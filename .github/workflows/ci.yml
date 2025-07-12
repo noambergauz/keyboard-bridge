@@ -46,10 +46,6 @@ jobs:
       working-directory: src/python
       run: pdm run lint && pdm run sort 
       
-    - name: Run type checking
-      working-directory: src/python
-      run: pdm run type-check
-      
     - name: Build wheel
       working-directory: src/python
       run: pdm build

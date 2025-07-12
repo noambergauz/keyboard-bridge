@@ -162,7 +162,8 @@ class KeyboardEventProcessor:
 
     def get_composition_text(self) -> str:
         """Get the current composition text."""
-        return str(self.composition_state.get("text", ""))
+        text = self.composition_state.get("text", "")
+        return str(text) if text is not None else ""
 
     def clear_composition_state(self) -> None:
         """Clear the composition state."""
@@ -171,8 +172,10 @@ class KeyboardEventProcessor:
 
     def is_composition_active(self) -> bool:
         """Check if composition is currently active."""
-        return bool(self.composition_state.get("text"))
+        text = self.composition_state.get("text")
+        return bool(text)
 
     def is_dead_key_active(self) -> bool:
         """Check if a dead key is currently active."""
-        return bool(self.dead_key_state.get("active", False))
+        active = self.dead_key_state.get("active", False)
+        return bool(active)

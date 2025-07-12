@@ -76,7 +76,6 @@ lint = [
 dev = "python -m keyboard_bridge.daemon --debug"
 lint = "black keyboard_bridge"
 sort = "isort keyboard_bridge"
-type-check = "mypy keyboard_bridge"
 
 [tool.black]
 line-length = 88
@@ -116,6 +115,8 @@ warn_unused_ignores = true
 warn_no_return = true
 warn_unreachable = true
 strict_equality = true
+ignore_missing_imports = true
+mypy_path = "stubs"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

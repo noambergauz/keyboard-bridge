@@ -13,10 +13,10 @@ import logging
 import signal
 import sys
 from dataclasses import dataclass
-from typing import Dict, Optional, Any
+from typing import Any, Dict, Optional
 
-from websockets.exceptions import ConnectionClosed
-from websockets.server import WebSocketServerProtocol, serve
+from websockets.exceptions import ConnectionClosed  # type: ignore
+from websockets.legacy.server import WebSocketServerProtocol, serve  # type: ignore
 
 from keyboard_bridge.event_processor import KeyboardEventProcessor
 from keyboard_bridge.virtual_keyboard import VirtualKeyboardDevice
@@ -77,7 +77,9 @@ class KeyboardBridgeDaemon:
             logger.info(f"WebSocket server listening on ws://{host}:{self.port}")
             await asyncio.Future()  # Run forever
 
-    async def handle_client(self, websocket: WebSocketServerProtocol, path: str) -> None:
+    async def handle_client(
+        self, websocket: WebSocketServerProtocol, path: str
+    ) -> None:
         """Handle incoming WebSocket connections."""
         client_id = f"client_{len(self.clients) + 1}"
         client = ClientConnection(websocket=websocket, client_id=client_id)
@@ -99,7 +101,13 @@ class KeyboardBridgeDaemon:
     async def process_message(self, client: ClientConnection, message: str) -> None:
         """Process incoming keyboard events from clients."""
         try:
-            data = pyjson.loads(message)
+            # Convert bytes to str if necessary
+            if isinstance(message, bytes):
+                message_str = message.decode("utf-8")
+            else:
+                message_str = message
+
+            data = pyjson.loads(message_str)
             event_type = data.get("type")
 
             if event_type == "keyboard_event":
@@ -118,7 +126,9 @@ class KeyboardBridgeDaemon:
         except Exception as e:
             logger.error(f"Error processing message from {client.client_id}: {e}")
 
-    async def handle_keyboard_event(self, client: ClientConnection, data: Dict[str, Any]) -> None:
+    async def handle_keyboard_event(
+        self, client: ClientConnection, data: Dict[str, Any]
+    ) -> None:
         """Handle keyboard events and send to virtual keyboard."""
         try:
             # Process the keyboard event
@@ -138,7 +148,9 @@ class KeyboardBridgeDaemon:
         except Exception as e:
             logger.error(f"Error handling keyboard event: {e}")
 
-    async def handle_composition_event(self, client: ClientConnection, data: Dict[str, Any]) -> None:
+    async def handle_composition_event(
+        self, client: ClientConnection, data: Dict[str, Any]
+    ) -> None:
         """Handle composition events (AltGr, dead keys, etc.)."""
         try:
             # Process composition event
@@ -160,7 +172,9 @@ class KeyboardBridgeDaemon:
         except Exception as e:
             logger.error(f"Error handling composition event: {e}")
 
-    async def handle_connect(self, client: ClientConnection, data: Dict[str, Any]) -> None:
+    async def handle_connect(
+        self, client: ClientConnection, data: Dict[str, Any]
+    ) -> None:
         """Handle client connection setup."""
         try:
             # Assign device ID to client
@@ -180,7 +194,9 @@ class KeyboardBridgeDaemon:
         except Exception as e:
             logger.error(f"Error handling connect event: {e}")
 
-    async def handle_keymap(self, client: ClientConnection, data: Dict[str, Any]) -> None:
+    async def handle_keymap(
+        self, client: ClientConnection, data: Dict[str, Any]
+    ) -> None:
         """Handle keymap event from client."""
         try:
             keymap = data.get("keymap")
@@ -217,7 +233,9 @@ async def main() -> None:
     """Main entry point."""
     parser = argparse.ArgumentParser(description="Keyboard Bridge Daemon")
     parser.add_argument("--port", type=int, default=8080, help="WebSocket port")
-    parser.add_argument("--device-id", type=int, default=1, help="Virtual keyboard device ID")
+    parser.add_argument(
+        "--device-id", type=int, default=1, help="Virtual keyboard device ID"
+    )
     parser.add_argument("--host", type=str, default="localhost", help="WebSocket host")
     parser.add_argument("--keymap", type=str, help="Path to key mapping JSON file")
     parser.add_argument("--debug", action="store_true", help="Enable debug logging")
@@ -235,7 +253,9 @@ async def main() -> None:
         except Exception as e:
             logger.error(f"Failed to load keymap: {e}")
     # Create and start daemon
-    daemon = KeyboardBridgeDaemon(port=args.port, device_id=args.device_id, host=args.host, keymap=keymap)
+    daemon = KeyboardBridgeDaemon(
+        port=args.port, device_id=args.device_id, host=args.host, keymap=keymap
+    )
 
     # Setup signal handlers
     def signal_handler(signum: int, frame: Any) -> None:
