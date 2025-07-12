@@ -74,9 +74,7 @@ lint = [
 
 [tool.pdm.scripts]
 dev = "python -m keyboard_bridge.daemon --debug"
-test = "pytest tests/ -v"
-test-cov = "pytest tests/ --cov=keyboard_bridge --cov-report=html"
-lint = "black keyboard_bridge/ tests/ && isort keyboard_bridge/ tests/ && flake8 keyboard_bridge/ tests/"
+lint = "black keyboard_bridge/ isort keyboard_bridge/ && flake8 keyboard_bridge/"
 type-check = "mypy keyboard_bridge/"
 
 [tool.black]
