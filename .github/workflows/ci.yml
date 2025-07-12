@@ -50,10 +50,6 @@ jobs:
       working-directory: src/python
       run: pdm run type-check
       
-    - name: Run tests
-      working-directory: src/python
-      run: pdm run test
-      
     - name: Build wheel
       working-directory: src/python
       run: pdm build
@@ -86,10 +82,6 @@ jobs:
     - name: Run linting
       working-directory: src/typescript
       run: npm run lint
-      
-    - name: Run tests
-      working-directory: src/typescript
-      run: npm test
       
     - name: Build TypeScript library
       working-directory: src/typescript

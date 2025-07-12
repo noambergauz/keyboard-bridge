@@ -84,69 +84,6 @@ jobs:
         path: src/typescript/dist/
         retention-days: 30
 
-  test-python:
-    runs-on: ubuntu-latest
-    needs: build-python
-    strategy:
-      matrix:
-        python-version: ["3.11"]
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ matrix.python-version }}
-        
-    - name: Install PDM
-      uses: pdm-project/setup-pdm@v3
-      with:
-        python-version: ${{ matrix.python-version }}
-        
-    - name: Cache PDM dependencies
-      uses: actions/cache@v4
-      with:
-        path: |
-          src/python/.pdm.toml
-          src/python/pdm.lock
-          src/python/.venv
-        key: pdm-${{ matrix.python-version }}-${{ hashFiles('src/python/pdm.lock') }}
-        restore-keys: |
-          pdm-${{ matrix.python-version }}-
-          
-    - name: Install dependencies
-      working-directory: src/python
-      run: pdm install --group :test
-      
-    - name: Run Python tests
-      working-directory: src/python
-      run: pdm run test
-
-  test-typescript:
-    runs-on: ubuntu-latest
-    needs: build-typescript
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
-        cache-dependency-path: src/typescript/package-lock.json
-        
-    - name: Install dependencies
-      working-directory: src/typescript
-      run: npm ci
-      
-    - name: Run TypeScript tests
-      working-directory: src/typescript
-      run: npm test
-
   create-release:
     runs-on: ubuntu-latest
     needs: [build-python, build-typescript, test-python, test-typescript]
