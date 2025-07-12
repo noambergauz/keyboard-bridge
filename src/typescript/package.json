@@ -20,7 +20,7 @@
     "unicode",
     "composition"
   ],
-  "author": "Keyboard Bridge Team",
+  "author": "Noam Bergauz <bergauznoam@gmail.com>",
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^20.0.0",

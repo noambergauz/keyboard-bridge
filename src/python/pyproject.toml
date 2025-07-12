@@ -3,7 +3,7 @@ name = "keyboard-bridge"
 version = "1.0.0"
 description = "A Python library for creating virtual USB HID keyboard devices and handling keyboard events via WebSocket"
 authors = [
-    {name = "Keyboard Bridge Team", email = "team@keyboardbridge.dev"}
+    {name = "Noam Bergauz", email = "bergauznoam@gmail.com"}
 ]
 readme = "README.md"
 license = {text = "MIT"}
@@ -42,10 +42,10 @@ test = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/keyboard-bridge/keyboard-bridge"
+Homepage = "https://github.com/bergauznoam/keyboard-bridge"
 Documentation = "https://keyboard-bridge.readthedocs.io"
-Repository = "https://github.com/keyboard-bridge/keyboard-bridge"
-Issues = "https://github.com/keyboard-bridge/keyboard-bridge/issues"
+Repository = "https://github.com/bergauznoam/keyboard-bridge"
+Issues = "https://github.com/bergauznoam/keyboard-bridge/issues"
 
 [project.scripts]
 keyboard-bridge = "keyboard_bridge.daemon:cli_main"
