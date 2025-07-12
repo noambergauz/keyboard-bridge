@@ -16,6 +16,7 @@ venv/
 # PDM
 pdm.lock
 .pdm.toml
+.pdm-python
 
 # TypeScript/Node
 node_modules/
