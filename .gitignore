@@ -12,6 +12,7 @@ build/
 venv/
 .env
 .env.*
+.mypy_cache
 
 # PDM
 pdm.lock
