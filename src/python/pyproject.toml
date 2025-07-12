@@ -74,8 +74,9 @@ lint = [
 
 [tool.pdm.scripts]
 dev = "python -m keyboard_bridge.daemon --debug"
-lint = "black keyboard_bridge/ && isort keyboard_bridge/ && flake8 keyboard_bridge/"
-type-check = "mypy keyboard_bridge/"
+lint = "black keyboard_bridge"
+sort = "isort keyboard_bridge"
+type-check = "mypy keyboard_bridge"
 
 [tool.black]
 line-length = 88
