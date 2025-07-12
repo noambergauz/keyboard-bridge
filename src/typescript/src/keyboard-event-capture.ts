@@ -5,7 +5,7 @@
  * for transmission to the Python daemon.
  */
 
-import type { KeyboardEvent, CompositionEvent, ModifierState, EventCaptureOptions } from './types';
+import type { KeyboardEvent, CompositionEvent, EventCaptureOptions, ModifierState, EventListener } from './types';
 
 export class KeyboardEventCapture {
   private target: HTMLElement | Document;

@@ -13,7 +13,6 @@ export class WebSocketClient {
   private reconnectInterval: number;
   private maxReconnectAttempts: number;
   private reconnectAttempts = 0;
-  private debug: boolean;
   private isConnecting = false;
   private isConnected = false;
 
@@ -21,7 +20,6 @@ export class WebSocketClient {
     this.url = options.url;
     this.reconnectInterval = options.reconnectInterval || 5000;
     this.maxReconnectAttempts = options.maxReconnectAttempts || 10;
-    this.debug = options.debug || false;
   }
 
   /**
@@ -67,11 +65,8 @@ export class WebSocketClient {
         };
       });
 
-      this.log('Connected to WebSocket server');
-
     } catch (error) {
       this.isConnecting = false;
-      this.log(`Failed to connect: ${error}`);
       throw error;
     }
   }
@@ -86,7 +81,6 @@ export class WebSocketClient {
     }
     this.isConnected = false;
     this.isConnecting = false;
-    this.log('Disconnected from WebSocket server');
   }
 
   /**
@@ -97,14 +91,8 @@ export class WebSocketClient {
       throw new Error('WebSocket not connected');
     }
 
-    try {
-      const message = JSON.stringify(event);
-      this.ws.send(message);
-      this.log(`Sent event: ${event.type}`);
-    } catch (error) {
-      this.log(`Failed to send event: ${error}`);
-      throw error;
-    }
+    const message = JSON.stringify(event);
+    this.ws.send(message);
   }
 
   /**
@@ -131,8 +119,6 @@ export class WebSocketClient {
     this.isConnected = false;
     this.isConnecting = false;
     
-    this.log(`WebSocket closed: ${event.code} - ${event.reason}`);
-    
     // Attempt to reconnect if not a normal closure
     if (event.code !== 1000 && this.reconnectAttempts < this.maxReconnectAttempts) {
       this.attemptReconnect();
@@ -145,7 +131,6 @@ export class WebSocketClient {
    * Handle WebSocket error event
    */
   private handleError(error: Event): void {
-    this.log(`WebSocket error: ${error}`);
     this.onError?.(error);
   }
 
@@ -155,10 +140,9 @@ export class WebSocketClient {
   private handleMessage(event: MessageEvent): void {
     try {
       const data = JSON.parse(event.data);
-      this.log(`Received message: ${data.type}`);
       this.onMessage?.(data);
     } catch (error) {
-      this.log(`Failed to parse message: ${error}`);
+      this.onError?.(error as Event);
     }
   }
 
@@ -167,28 +151,16 @@ export class WebSocketClient {
    */
   private attemptReconnect(): void {
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-      this.log('Max reconnection attempts reached');
       return;
     }
 
     this.reconnectAttempts++;
-    this.log(`Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
 
     setTimeout(() => {
-      this.connect().catch((error) => {
-        this.log(`Reconnection failed: ${error}`);
+      this.connect().catch(() => {
         this.attemptReconnect();
       });
     }, this.reconnectInterval);
-  }
-
-  /**
-   * Log message if debug is enabled
-   */
-  private log(message: string): void {
-    if (this.debug) {
-      console.log(`[WebSocketClient] ${message}`);
-    }
   }
 
   // Event callbacks

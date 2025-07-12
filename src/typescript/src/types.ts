@@ -2,6 +2,9 @@
  * Type definitions for the Keyboard Bridge Client
  */
 
+// DOM types for event listeners
+export type EventListener = (event: Event) => void;
+
 export interface ModifierState {
   ctrl: boolean;
   alt: boolean;
