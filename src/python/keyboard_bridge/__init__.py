@@ -10,11 +10,11 @@ __author__ = "Keyboard Bridge Team"
 __email__ = "team@keyboardbridge.dev"
 
 from .daemon import KeyboardBridgeDaemon
-from .virtual_keyboard import VirtualKeyboardDevice
 from .event_processor import KeyboardEventProcessor
+from .virtual_keyboard import VirtualKeyboardDevice
 
 __all__ = [
     "KeyboardBridgeDaemon",
-    "VirtualKeyboardDevice", 
+    "VirtualKeyboardDevice",
     "KeyboardEventProcessor",
-] 
+]
